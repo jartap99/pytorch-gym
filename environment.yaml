@@ -1,0 +1,11 @@
+name: pytorchcuda
+channels:
+  - pytorch
+  - nvidia
+dependencies:
+  - pytorch
+  - torchvision
+  - torchaudio
+  - numpy
+  - matplotlib
+  - pytorch-cuda=11.7
