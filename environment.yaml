@@ -9,3 +9,5 @@ dependencies:
   - numpy
   - matplotlib
   - pytorch-cuda=11.7
+  - tensorboard
+  
