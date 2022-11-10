@@ -68,8 +68,10 @@ class LeNet5(torch.nn.Module):
         super().__init__()
         self.featureExtractor = torch.nn.Sequential(
             torch.nn.Conv2d(in_channels=3, out_channels=6, kernel_size=5, stride=1),
+            torch.nn.ReLU(),
             torch.nn.AvgPool2d(kernel_size=2, stride=2, padding=0),
             torch.nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5, stride=1),
+            torch.nn.ReLU(),
             torch.nn.AvgPool2d(kernel_size=2, stride=2, padding=0)
         )
         self.classifier = torch.nn.Sequential(
@@ -90,12 +92,12 @@ class LeNet5(torch.nn.Module):
         #return label
         return logits
 
-def load_data(writer):
+def load_data(root, writer=None):
     # load data from torch vision and then transform to torxh tensors
     transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor(),
                                                 torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    trainDataSet = torchvision.datasets.CIFAR10(root="./data/cifar10/", train=True, download=True, transform=transform)
-    testDataSet  = torchvision.datasets.CIFAR10(root="./data/cifar10/", train=False, download=True, transform=transform)
+    trainDataSet = torchvision.datasets.CIFAR10(root=root, train=True, download=True, transform=transform)
+    testDataSet  = torchvision.datasets.CIFAR10(root=root, train=False, download=True, transform=transform)
 
     # create dataloader
     trainDataLoader = torch.utils.data.DataLoader(trainDataSet, batch_size=4, shuffle=True)
@@ -113,9 +115,10 @@ def load_data(writer):
     print("[INFO] sample train data: ", labels[0], classes[labels[0]])
 
     # Write this to tensorboard
-    img_grid = torchvision.utils.make_grid(images)
-    writer.add_image("Sample training CIFAR10 image", img_grid)
-    writer.flush()
+    if writer is not None:
+        img_grid = torchvision.utils.make_grid(images)
+        writer.add_image("Sample training CIFAR10 image", img_grid)
+        writer.flush()
     
     return (trainDataSet, trainDataLoader, testDataSet, testDataLoader, classes)
 
@@ -203,7 +206,7 @@ if __name__ == "__main__":
     # tensorboard summary writer
     writer = SummaryWriter("./runs/experiment_2/")
 
-    (trainDataSet, trainDataLoader, testDataSet, testDataLoader, classes) = load_data(writer)
+    (trainDataSet, trainDataLoader, testDataSet, testDataLoader, classes) = load_data("./data/cifar10/", writer)
 
     # Visualizing the model
     # Again, grab a single mini-batch of images
@@ -257,7 +260,7 @@ if __name__ == "__main__":
     writer.flush()
 
     # Finally .. train
-    train(model, trainDataLoader, testDataLoader, 2, device, writer)
+    train(model, trainDataLoader, testDataLoader, 10, device, writer)
 
     writer.close()
     
